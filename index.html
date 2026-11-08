@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101827">
+    <title>MDF Work Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="header">
+        <h1>MDF Work Tracker</h1>
+        <p>Manage your daily work and earnings</p>
+    </header>
+
+    <main class="container">
+
+        <section class="dashboard">
+            <div class="card">
+                <span>Total Earnings</span>
+                <h2 id="totalEarnings">₹0</h2>
+            </div>
+
+            <div class="card">
+                <span>Payment Received</span>
+                <h2 id="totalReceived">₹0</h2>
+            </div>
+
+            <div class="card">
+                <span>Remaining Balance</span>
+                <h2 id="remainingBalance">₹0</h2>
+            </div>
+
+            <div class="card">
+                <span>Total Working Days</span>
+                <h2 id="workingDays">0</h2>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Add Daily Attendance</h2>
+
+            <label for="workDate">Select Date</label>
+            <input type="date" id="workDate">
+
+            <div class="work-buttons">
+                <button onclick="addWork('full')">
+                    Full Day - ₹200
+                </button>
+
+                <button onclick="addWork('half')">
+                    Half Day - ₹100
+                </button>
+
+                <button onclick="addWork('off')">
+                    Off Day - ₹0
+                </button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Add Payment Received</h2>
+
+            <label for="paymentDate">Payment Date</label>
+            <input type="date" id="paymentDate">
+
+            <label for="paymentAmount">Amount Received (₹)</label>
+            <input
+                type="number"
+                id="paymentAmount"
+                placeholder="Enter amount"
+                min="1"
+            >
+
+            <button onclick="addPayment()" class="payment-button">
+                Add Payment
+            </button>
+        </section>
+
+        <section class="panel">
+            <h2>Work History</h2>
+            <div id="workHistory"></div>
+        </section>
+
+        <section class="panel">
+            <h2>Payment History</h2>
+            <div id="paymentHistory"></div>
+        </section>
+
+        <section class="panel">
+            <h2>Data Backup</h2>
+            <button onclick="exportBackup()">Download Backup</button>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>MDF Work Tracker | Personal Work Management</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
