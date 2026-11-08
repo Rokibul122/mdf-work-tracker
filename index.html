@@ -3,102 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#101827">
     <title>MDF Work Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-blue-500 selection:text-white">
 
-    <header class="header">
-        <h1>MDF Work Tracker</h1>
-        <p>Manage your daily work and earnings</p>
+    <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <i class="fa-solid font-bold text-xl fa-clipboard-user"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">MDF Work Tracker</h1>
+                    <p class="text-xs text-slate-400">Attendance & Payment Settlement Register</p>
+                </div>
+            </div>
+
+            <div class="flex items-center flex-wrap gap-2 text-sm">
+                <button onclick="openSettingsModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                    <i class="fa-solid fa-gear text-xs text-blue-400"></i> Settings
+                </button>
+                <button onclick="exportBackup()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                    <i class="fa-solid fa-download text-xs text-emerald-400"></i> Export JSON
+                </button>
+                <button onclick="triggerImport()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                    <i class="fa-solid fa-upload text-xs text-amber-400"></i> Import
+                </button>
+                <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importBackup(event)">
+                <button onclick="window.print()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                    <i class="fa-solid fa-print text-xs text-purple-400"></i> Print Statement
+                </button>
+            </div>
+        </div>
     </header>
 
-    <main class="container">
+    <div class="hidden print-only p-6 border-b border-slate-300">
+        <h1 class="text-2xl font-bold text-slate-900">MDF Work Tracker Report</h1>
+        <p class="text-sm text-slate-600">Generated on: <span id="printDate"></span></p>
+    </div>
 
-        <section class="dashboard">
-            <div class="card">
-                <span>Total Earnings</span>
-                <h2 id="totalEarnings">₹0</h2>
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow space-y-6">
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4 no-print">
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <i class="fa-solid fa-filter text-slate-400 text-sm"></i>
+                <label for="monthFilter" class="text-sm font-semibold text-slate-700">Filter View:</label>
+                <select id="monthFilter" onchange="filterRecords()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2">
+                    <option value="all">All Time History</option>
+                </select>
             </div>
 
-            <div class="card">
-                <span>Payment Received</span>
-                <h2 id="totalReceived">₹0</h2>
+            <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg w-full md:w-auto justify-center">
+                <i class="fa-solid fa-circle-info text-blue-500"></i>
+                <span>Default Rates: Full Day = <strong id="rateLabelFull">₹200</strong> | Half Day = <strong id="rateLabelHalf">₹100</strong></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-card rounded-2xl p-4 shadow-sm border border-slate-200/60 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Earned</span>
+                    <span class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <i class="fa-solid fa-wallet text-sm"></i>
+                    </span>
+                </div>
+                <div class="mt-2">
+                    <h3 id="totalEarnings" class="text-2xl font-extrabold text-slate-900">₹0</h3>
+                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                        <span id="workingDaysBadge" class="font-medium text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded">0 Days Worked</span>
+                    </p>
+                </div>
             </div>
 
-            <div class="card">
-                <span>Remaining Balance</span>
-                <h2 id="remainingBalance">₹0</h2>
+            <div class="glass-card rounded-2xl p-4 shadow-sm border border-slate-200/60 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Received</span>
+                    <span class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-hand-holding-dollar text-sm"></i>
+                    </span>
+                </div>
+                <div class="mt-2">
+                    <h3 id="totalReceived" class="text-2xl font-extrabold text-slate-900">₹0</h3>
+                    <p class="text-xs text-slate-500 mt-1">Payments collected</p>
+                </div>
             </div>
 
-            <div class="card">
-                <span>Total Working Days</span>
-                <h2 id="workingDays">0</h2>
+            <div class="glass-card rounded-2xl p-4 shadow-sm border border-slate-200/60 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Balance Due</span>
+                    <span id="balanceIconContainer" class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <i class="fa-solid fa-scale-unbalanced text-sm"></i>
+                    </span>
+                </div>
+                <div class="mt-2">
+                    <h3 id="remainingBalance" class="text-2xl font-extrabold text-slate-900">₹0</h3>
+                    <p id="balanceStatusText" class="text-xs text-amber-600 font-medium mt-1">Pending payment</p>
+                </div>
             </div>
-        </section>
 
-        <section class="panel">
-            <h2>Add Daily Attendance</h2>
-
-            <label for="workDate">Select Date</label>
-            <input type="date" id="workDate">
-
-            <div class="work-buttons">
-                <button onclick="addWork('full')">
-                    Full Day - ₹200
-                </button>
-
-                <button onclick="addWork('half')">
-                    Half Day - ₹100
-                </button>
-
-                <button onclick="addWork('off')">
-                    Off Day - ₹0
-                </button>
+            <div class="glass-card rounded-2xl p-4 shadow-sm border border-slate-200/60 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Shift Stats</span>
+                    <span class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-pie text-sm"></i>
+                    </span>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-xs text-slate-700">
+                    <div><span class="font-bold text-indigo-600" id="statFullCount">0</span> Full</div>
+                    <div><span class="font-bold text-amber-600" id="statHalfCount">0</span> Half</div>
+                    <div><span class="font-bold text-slate-400" id="statOffCount">0</span> Off</div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden flex">
+                    <div id="barFull" class="bg-indigo-600 h-full" style="width: 0%"></div>
+                    <div id="barHalf" class="bg-amber-500 h-full" style="width: 0%"></div>
+                    <div id="barOff" class="bg-slate-300 h-full" style="width: 0%"></div>
+                </div>
             </div>
-        </section>
+        </div>
 
-        <section class="panel">
-            <h2>Add Payment Received</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 no-print">
 
-            <label for="paymentDate">Payment Date</label>
-            <input type="date" id="paymentDate">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
+                <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <div class="p-2 rounded-lg bg-indigo-50 text-indigo-600">
+                            <i class="fa-solid fa-calendar-check text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Record Attendance</h2>
+                            <p class="text-xs text-slate-500">Mark daily work shift & auto-calculate rate</p>
+                        </div>
+                    </div>
+                </div>
 
-            <label for="paymentAmount">Amount Received (₹)</label>
-            <input
-                type="number"
-                id="paymentAmount"
-                placeholder="Enter amount"
-                min="1"
-            >
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Select Date</label>
+                        <input type="date" id="workDate" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
 
-            <button onclick="addPayment()" class="payment-button">
-                Add Payment
-            </button>
-        </section>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Shift Type</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <button type="button" onclick="addWork('full')" class="py-2.5 px-3 rounded-xl border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 text-indigo-900 font-semibold text-xs transition text-center flex flex-col items-center justify-center gap-1 group">
+                                <i class="fa-solid fa-briefcase text-indigo-600 group-hover:scale-110 transition-transform"></i>
+                                <span>Full Day</span>
+                                <span class="text-[10px] font-normal text-indigo-600" id="btnFullLabel">₹200</span>
+                            </button>
+                            <button type="button" onclick="addWork('half')" class="py-2.5 px-3 rounded-xl border border-amber-200 bg-amber-50/50 hover:bg-amber-100 text-amber-900 font-semibold text-xs transition text-center flex flex-col items-center justify-center gap-1 group">
+                                <i class="fa-solid fa-business-time text-amber-600 group-hover:scale-110 transition-transform"></i>
+                                <span>Half Day</span>
+                                <span class="text-[10px] font-normal text-amber-600" id="btnHalfLabel">₹100</span>
+                            </button>
+                            <button type="button" onclick="addWork('off')" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition text-center flex flex-col items-center justify-center gap-1 group">
+                                <i class="fa-solid fa-bed text-slate-400 group-hover:scale-110 transition-transform"></i>
+                                <span>Off Day</span>
+                                <span class="text-[10px] font-normal text-slate-500">₹0</span>
+                            </button>
+                            <button type="button" onclick="promptCustomWork()" class="py-2.5 px-3 rounded-xl border border-purple-200 bg-purple-50/50 hover:bg-purple-100 text-purple-900 font-semibold text-xs transition text-center flex flex-col items-center justify-center gap-1 group">
+                                <i class="fa-solid fa-pen-ruler text-purple-600 group-hover:scale-110 transition-transform"></i>
+                                <span>Custom</span>
+                                <span class="text-[10px] font-normal text-purple-600">Overtime</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <section class="panel">
-            <h2>Work History</h2>
-            <div id="workHistory"></div>
-        </section>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
+                <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <div class="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                            <i class="fa-solid fa-money-bill-wave text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Record Payment</h2>
+                            <p class="text-xs text-slate-500">Log money received or advance payments</p>
+                        </div>
+                    </div>
+                </div>
 
-        <section class="panel">
-            <h2>Payment History</h2>
-            <div id="paymentHistory"></div>
-        </section>
+                <form onsubmit="handlePaymentSubmit(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Date</label>
+                            <input type="date" id="paymentDate" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Amount Received (₹)</label>
+                            <input type="number" id="paymentAmount" placeholder="e.g. 500" min="1" step="any" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        </div>
+                    </div>
 
-        <section class="panel">
-            <h2>Data Backup</h2>
-            <button onclick="exportBackup()">Download Backup</button>
-        </section>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Payment Method</label>
+                            <select id="paymentMethod" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI / Online">UPI / Online</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Notes (Optional)</label>
+                            <input type="text" id="paymentNotes" placeholder="e.g. Weekly settlement" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
 
-    </main>
+                    <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus text-xs"></i> Record Payment
+                    </button>
+                </form>
+            </div>
+        </div>
 
-    <footer>
-        <p>MDF Work Tracker | Personal Work Management</p>
-    </footer>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div class="border-b border-slate-200 bg-slate-50/50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
+                <div class="flex items-center space-x-2 border-b sm:border-b-0 border-slate-200 pb-2 sm:pb-0">
+                    <button id="tabBtnWork" onclick="switchTab('work')" class="px-4 py-2 rounded-xl font-bold text-sm transition bg-white text-blue-600 shadow-sm border border-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-xs"></i> Attendance Log <span id="badgeWorkCount" class="ml-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">0</span>
+                    </button>
+                    <button id="tabBtnPayment" onclick="switchTab('payment')" class="px-4 py-2 rounded-xl font-semibold text-sm transition text-slate-600 hover:bg-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-xs"></i> Payment History <span id="badgePaymentCount" class="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0</span>
+                    </button>
+                </div>
 
-    <script src="script.js"></script>
-</body>
-</html>
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" onkeyup="handleSearch()" placeholder="Search date, notes, type..." class="w-full bg-white border border-slate-300 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div id="tabContentWork" class="p-4">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-700">
+                        <thead class="text-xs uppercase bg-slate-50 text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4 font-semibold">Date</th>
+                                <th class="py-3 px-4 font-semibold">Work Shift</th>
+                                <th class="py-3 px-4 font-semibold text-right">Earned Amount</th>
+                                <th class="py-3 px-4 font-semibold text-center no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workHistoryTable" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tabContentPayment" class="p-4 hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-700">
+                        <thead class="text-xs uppercase bg-slate-50 text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4 font-semibold">Date</th>
+                                <th class="py-3 px-4 font-semibold">Payment Method</th>
+                                <th class="py-3 px-4 font-semib
