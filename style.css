@@ -1,0 +1,266 @@
+/* Global Settings */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --background: #101827;
+    --surface: #1b2638;
+    --surface-light: #243247;
+    --primary: #38bdf8;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --border: #334155;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    padding: 30px 15px;
+    background: linear-gradient(135deg, #172554, #0f172a);
+    border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.header p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Main Container */
+.container {
+    width: 100%;
+    max-width: 850px;
+    margin: auto;
+    padding: 20px 15px;
+}
+
+/* Dashboard */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 15px;
+    border-radius: 16px;
+    min-width: 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card span {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.card h2 {
+    font-size: 25px;
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+}
+
+/* Panels */
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 22px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+}
+
+.panel h2 {
+    font-size: 19px;
+    margin-bottom: 18px;
+}
+
+/* Labels */
+label {
+    display: block;
+    color: var(--muted);
+    font-size: 14px;
+    margin: 12px 0 7px;
+}
+
+/* Inputs */
+input {
+    width: 100%;
+    padding: 13px;
+    background: var(--background);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    font-size: 15px;
+}
+
+input:focus {
+    border-color: var(--primary);
+}
+
+/* Buttons */
+button {
+    border: none;
+    border-radius: 10px;
+    padding: 13px 16px;
+    background: var(--primary);
+    color: #082f49;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Work Buttons */
+.work-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.work-buttons button:nth-child(1) {
+    background: var(--success);
+    color: #052e16;
+}
+
+.work-buttons button:nth-child(2) {
+    background: #facc15;
+    color: #422006;
+}
+
+.work-buttons button:nth-child(3) {
+    background: var(--danger);
+    color: white;
+}
+
+/* Payment Button */
+.payment-button {
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* History Items */
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface-light);
+    padding: 13px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.history-info {
+    min-width: 0;
+}
+
+.history-info strong {
+    display: block;
+    font-size: 14px;
+}
+
+.history-info small {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.history-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delete-button {
+    background: var(--danger);
+    color: white;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.edit-button {
+    background: #facc15;
+    color: #422006;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+/* Empty State */
+.empty-message {
+    text-align: center;
+    color: var(--muted);
+    padding: 20px 10px;
+    font-size: 14px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 20px 10px;
+    border-top: 1px solid var(--border);
+}
+
+/* Desktop Layout */
+@media (min-width: 600px) {
+    .dashboard {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .work-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .header h1 {
+        font-size: 34px;
+    }
+}
+
+/* Small Mobile Screens */
+@media (max-width: 360px) {
+    .card h2 {
+        font-size: 21px;
+    }
+
+    .panel {
+        padding: 16px;
+    }
+
+    .history-item {
+        align-items: flex-start;
+    }
+}
